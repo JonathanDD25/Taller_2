@@ -7,7 +7,7 @@ const authController = require('../controllers/auth.controller');
 // ==============================
 router.post('/registro', async (req, res) => {
     try {
-        const resultado = await authController.registrar(req.body);
+        const resultado = await authController.registrarUsuario(req.body);
         res.json(resultado);
     } catch (error) {
         console.error('Error en ruta de registro:', error);
