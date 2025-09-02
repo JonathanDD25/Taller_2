@@ -1,5 +1,9 @@
+const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
+
+const JWT_SECRET = "secret";
+const JWT_EXPIRATION = "1h";
 
 class AuthController {
 
@@ -83,41 +87,55 @@ class AuthController {
         rol: usuario.rol
       };
 
+      const token = jwt.sign(usuarioData,JWT_SECRET, { expiresIn: JWT_EXPIRATION});
+
       return {
         success: true,
         message: 'Inicio de sesión exitoso',
-        usuario: usuarioData
+        token,
       };
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       throw error;
     }
-  }
+  };
 
   // Verificar si un usuario está autenticado
-  async verificarUsuario(userId) {
+  async verificarUsuario(token) {
     try {
-      const [usuarios] = await db.query(
-        'SELECT id_usuario, nombre, apellido, email, rol FROM usuarios WHERE id_usuario = ?',
-        [userId]
-      );
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const userId = decoded.id_usuario; 
 
-      if (usuarios.length === 0) {
+        const [usuarios] = await db.query(
+            'SELECT id_usuario, nombre, apellido, email, rol FROM usuarios WHERE id_usuario = ?',
+            [userId]
+        );
+
+        if (usuarios.length === 0) {
+            return {
+                success: false,
+                message: 'Usuario no encontrado'
+            };
+        }
+
         return {
-          success: false,
-          message: 'Usuario no encontrado'
+            success: true,
+            usuario: usuarios[0]
         };
-      }
 
-      return {
-        success: true,
-        usuario: usuarios[0]
-      };
     } catch (error) {
-      console.error('Error al verificar usuario:', error);
-      throw error;
+        console.error('Error al verificar usuario:', error);
+        
+        if (error.name === 'TokenExpiredError') {
+            return { success: false, message: 'Token expirado' };
+        }
+        if (error.name === 'JsonWebTokenError') {
+            return { success: false, message: 'Token inválido' };
+        }
+
+        throw error;
     }
-  }
+}
 }
 
 module.exports = new AuthController();

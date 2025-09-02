@@ -44,15 +44,17 @@ router.post('/login', async (req, res) => {
 // ==============================
 // Ruta para verificar si un usuario está autenticado
 // ==============================
-router.get('/verificar/:id', async (req, res) => {
-    try {
-        const resultado = await authController.verificarUsuario(req.params.id);
+router.get('/verificar', async (req, res) => {
 
-        if (resultado.success) {
-            res.json(resultado);
-        } else {
-            res.status(404).json(resultado);
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Token no proporcionado' });
         }
+
+        const resultado = await authController.verificarUsuario(token);
+        res.json(resultado);
+
     } catch (error) {
         console.error('Error al verificar usuario:', error);
         res.status(500).json({

@@ -10,10 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loginForm.addEventListener('submit', manejarLogin);
 
   // Verificar si el usuario ya está autenticado
-  const usuarioId = localStorage.getItem('usuarioId');
-  if (usuarioId) {
-    // Si ya está autenticado, redirigir a la página principal
-    window.location.href = 'index_template.html';
+  try{
+      const usuarioId = localStorage.getItem('token');
+      if (token) {
+        // Si ya está autenticado, redirigir a la página principal
+        window.location.href = 'productos.html';
+      }
+  }catch(error){
+    return;
   }
 });
 
@@ -39,11 +43,7 @@ async function manejarLogin(e) {
 
     if (resultado.success) {
       // Guardar información del usuario en localStorage
-      localStorage.setItem('usuarioId', resultado.usuario.id_usuario);
-      localStorage.setItem('usuarioNombre', resultado.usuario.nombre);
-      localStorage.setItem('usuarioDescripcion', resultado.usuario.apellido);
-      localStorage.setItem('usuarioEmail', resultado.usuario.email);
-      localStorage.setItem('usuarioRol', resultado.usuario.rol);
+      localStorage.setItem('Token', resultado.token);
 
       mostrarMensaje('Inicio de sesión exitoso. Redirigiendo...', true);
 

@@ -34,17 +34,15 @@ function cerrarSesion() {
 }
 
 async function verificarSesion() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-    cerrarSesion();
-    return;
-    }
+    const token = localStorage.getItem("Token");
+    if (!token) cerrarSesion();
 
     try {
-    const response = await fetch(`${API_URL}/verify`, {
+    const response = await fetch(`${API_URL}/auth/verificar`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     if (!response.ok) throw new Error("Token inválido");
+
     } catch (error) {
     console.error("Sesión inválida:", error);
     cerrarSesion();
