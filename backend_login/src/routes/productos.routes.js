@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 // Crear una nueva persona
 router.post('/', async (req, res) => {
     try {
-        const nuevaProducto = await crud.crear(tabla, req.body);
+        const nuevaProducto = await crud.crear('productos', req.body);
         res.status(201).json(nuevaProducto);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -42,7 +42,8 @@ router.post('/', async (req, res) => {
 // Actualizar una persona
 router.put('/:id', async (req, res) => {
     try {
-        const productoActualizada = await crud.actualizar(tabla, idCampo, req.params.id, req.body);
+        const params = req.body;
+        const productoActualizada = await crud.actualizar(params);
         res.json(productoActualizada);
     } catch (error) {
         res.status(500).json({ error: error.message });

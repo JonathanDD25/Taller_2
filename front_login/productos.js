@@ -65,22 +65,35 @@ function mostrarProductos(productos) {
     const fragment = document.createDocumentFragment();
 
     productos.forEach(producto => {
-    const clone = templateCard.cloneNode(true);
+        const clone = templateCard.cloneNode(true);
 
-    clone.querySelector(".nombre-productos").textContent = producto.nombre;
-    clone.querySelector(".descripcion-productos").textContent = producto.descripcion;
-    clone.querySelector(".stock-productos").textContent = `Stock: ${producto.stock}`;
+        clone.querySelector(".nombre-productos").textContent = producto.nombre;
+        clone.querySelector(".descripcion-productos").textContent = producto.descripcion;
+        clone.querySelector(".stock-productos").textContent = `Stock: ${producto.stock}`;
 
-    const imagen = clone.querySelector(".imagen-productos");
-    if (producto.imagen) {
-        imagen.src = `${API_URL}/imagenes/${producto.imagen}`;
-        imagen.style.display = "block";
-    }
+        const imagen = clone.querySelector(".imagen-productos");
+        if (producto.imagen) {
+            // Convertir el Buffer a un Array de bytes
+            const bytes = new Uint8Array(producto.imagen.data);
+            
+            // Crear un blob a partir de los bytes
+            const blob = new Blob([bytes], { type: 'image/jpeg' }); // Asegúrate de que el tipo MIME sea correcto (jpeg, png, etc.)
+            
+            // Crear una URL temporal del blob
+            const url = URL.createObjectURL(blob);
+            
+            // Asignar la URL a la propiedad src de la imagen
+            imagen.src = url;
+            imagen.style.display = "block";
 
-    clone.querySelector(".btn-editar").addEventListener("click", () => editarProducto(producto));
-    clone.querySelector(".btn-eliminar").addEventListener("click", () => eliminarProducto(producto.id));
+            // Opcional: Liberar el objeto URL cuando ya no se necesite
+            // Puedes hacerlo al quitar el producto de la vista para liberar memoria
+        }
 
-    fragment.appendChild(clone);
+        clone.querySelector(".btn-editar").addEventListener("click", () => editarProducto(producto));
+        clone.querySelector(".btn-eliminar").addEventListener("click", () => eliminarProducto(producto.id_producto));
+
+        fragment.appendChild(clone);
     });
 
     contenedor.appendChild(fragment);
@@ -94,7 +107,7 @@ form.addEventListener("submit", async (e) => {
     id: document.getElementById("id_producto").value,
     nombre: document.getElementById("nombre").value,
     descripcion: document.getElementById("descripcion").value,
-    categorias: document.getElementById("categorias").value,
+    categoria: document.getElementById("categorias").value,
     entradas: parseInt(document.getElementById("entradas").value),
     salidas: parseInt(document.getElementById("salidas").value),
     stock: parseInt(document.getElementById("stock").value),
@@ -110,7 +123,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     if (inputImagen.files.length > 0) {
-        await subirImagen(response.id, inputImagen.files[0]);
+        await subirImagen(response.nombre, inputImagen.files[0]);
     }
 
     limpiarFormulario();
@@ -130,7 +143,7 @@ async function crearProducto(producto) {
 }
 
 async function actualizarProducto(producto) {
-    const response = await fetch(`${API_URL}/productos/${producto.id}`, {
+    const response = await fetch(`${API_URL}/productos/${producto.nombre}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(producto)
@@ -166,19 +179,27 @@ function editarProducto(producto) {
     }
 }
 
-async function subirImagen(id, file) {
+async function subirImagen(nombre, file) {
     const formData = new FormData();
     formData.append("imagen", file);
 
     try {
-    await fetch(`${API_URL}/productos/${id}/imagen`, {
-        method: "POST",
-        body: formData
-    });
+        const response = await fetch(`${API_URL}/imagenes/${nombre}/imagen`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error en el servidor: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
     } catch (error) {
-    console.error("Error al subir imagen:", error);
+        throw error;
     }
 }
+
 
 function limpiarFormulario() {
     form.reset();

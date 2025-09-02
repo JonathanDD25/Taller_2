@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer'); // Importado aunque no se use por ahora
+const upload = multer({ storage: multer.memoryStorage() });
 const imagenesController = require('../controllers/imagenes.controller');
 
 // ==============================
@@ -56,21 +57,23 @@ router.delete('/eliminar/:tabla/:campoId/:id', async (req, res) => {
 // ==============================
 // Ruta para insertar una imagen (Recibe la imagen en base64)
 // ==============================
-router.post('/insertar/:tabla/:campoId/:id', async (req, res) => {
-    const { tabla, campoId, id } = req.params;
-    const imagenBase64 = req.body.imagen;
-
-    if (!imagenBase64) {
-        return res.status(400).json({ error: 'Se requiere la imagen en base64' });
+router.post('/:nombre/imagen', upload.single('imagen'), async (req, res) => {
+    const { nombre } = req.params;
+    if (!req.file) {
+        return res.status(400).json({ error: 'No se ha enviado ningún archivo de imagen.' });
     }
 
     try {
-        const resultado = await imagenesController.insertarImagen(tabla, campoId, id, imagenBase64);
+        const resultado = await imagenesController.subirImagen(nombre, req.file.buffer);
         res.json(resultado);
     } catch (error) {
         console.error('Error al insertar la imagen:', error);
-        res.status(500).json({ error: 'Error al insertar la imagen' });
+        res.status(500).json({ error: 'Error al insertar la imagen.' });
     }
+});
+
+router.get('/', (req, res) => {
+    res.send('Ruta para obtener todos los productos');
 });
 
 module.exports = router;

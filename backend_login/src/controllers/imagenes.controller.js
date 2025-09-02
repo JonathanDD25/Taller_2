@@ -2,38 +2,28 @@ const db = require('../config/db');
 
 class ImagenesController {
   // Subir o actualizar una imagen (como binario)
-    async subirImagen(tabla, campoId, id, imagenBase64) {
-    try {
-      // Verificar si el registro existe
-      const [registro] = await db.query('SELECT * FROM ?? WHERE ?? = ?', [tabla, campoId, id]);
+    async subirImagen(nombre, bufferImagen) {
+        try {
 
-        if (registro.length === 0) {
-        return { error: 'No se encontró el registro con el ID proporcionado.' };
+            const query = 'UPDATE productos SET imagen = ? WHERE nombre = ?';
+            const [result] = await db.query(query, [bufferImagen, nombre]);
+
+            if (result.affectedRows > 0) {
+                return { message: 'Imagen actualizada correctamente.' };
+            } else {
+                return { error: 'No se encontró el registro con el ID proporcionado o la imagen no cambió.' };
+            }
+        } catch (error) {
+            console.error('Error al subir la imagen:', error);
+            throw error;
         }
-
-      // Convertir la imagen de base64 a binario
-        const bufferImagen = Buffer.from(imagenBase64, 'base64');
-
-      // Ejecutar la consulta para actualizar la imagen en la tabla correspondiente
-        const query = 'UPDATE ?? SET imagen = ? WHERE ?? = ?';
-        const [result] = await db.query(query, [tabla, bufferImagen, campoId, id]);
-
-        if (result.affectedRows > 0) {
-        return { message: 'Imagen actualizada correctamente.' };
-        } else {
-        return { error: 'Error al actualizar la imagen.' };
-        }
-    } catch (error) {
-        console.error('Error al subir la imagen:', error);
-        throw error;
-    }
     }
 
   // Obtener la imagen en base64
     async obtenerImagen(tabla, campoId, id) {
     try {
       // Consultar la imagen en binario de la base de datos
-        const [rows] = await db.query('SELECT imagen FROM ?? WHERE ?? = ?', [tabla, campoId, id]);
+        const [rows] = await db.query('SELECT imagen FROM ?? WHERE ?? = ?', [tabla, campoId, nombre]);
 
         if (rows.length === 0) {
         return { error: 'Registro no encontrado' };
@@ -54,7 +44,7 @@ class ImagenesController {
     }
 
   // Eliminar la imagen (limpiar el campo de imagen en la base de datos)
-    async eliminarImagen(tabla, campoId, id) {
+    async eliminarImagen(tabla, campoId, nombre) {
     try {
       // Verificar si el registro existe
       const [registro] = await db.query('SELECT * FROM ?? WHERE ?? = ?', [tabla, campoId, id]);
