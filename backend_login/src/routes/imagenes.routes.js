@@ -14,7 +14,6 @@ router.put('/subir/:tabla/:campoId/:id', async (req, res) => {
     if (!imagenBase64) {
         return res.status(400).json({ error: 'Se requiere la imagen en base64' });
     }
-
     try {
         const resultado = await imagenesController.procesarImagen(tabla, campoId, id, imagenBase64);
         res.json(resultado);
@@ -29,7 +28,6 @@ router.put('/subir/:tabla/:campoId/:id', async (req, res) => {
 // ==============================
 router.get('/obtener/:tabla/:campoId/:id', async (req, res) => {
     const { tabla, campoId, id } = req.params;
-
     try {
         const imagen = await imagenesController.obtenerImagen(tabla, campoId, id);
         res.json(imagen);
@@ -44,7 +42,6 @@ router.get('/obtener/:tabla/:campoId/:id', async (req, res) => {
 // ==============================
 router.delete('/eliminar/:tabla/:campoId/:id', async (req, res) => {
     const { tabla, campoId, id } = req.params;
-
     try {
         const resultado = await imagenesController.eliminarImagen(tabla, campoId, id);
         res.json(resultado);
@@ -62,7 +59,6 @@ router.post('/:nombre/imagen', upload.single('imagen'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No se ha enviado ningún archivo de imagen.' });
     }
-
     try {
         const resultado = await imagenesController.subirImagen(nombre, req.file.buffer);
         res.json(resultado);

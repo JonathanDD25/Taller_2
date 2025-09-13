@@ -26,7 +26,7 @@ class CrudController {
   async crear(tabla, data) {
     try {
       const dataToInsert = { ...data };
-      delete dataToInsert.id;
+      delete dataToInsert.id_producto;
       delete dataToInsert.stock;
       if (dataToInsert.categorias) {
         dataToInsert.categoria = dataToInsert.categorias;
@@ -45,13 +45,13 @@ class CrudController {
 
   async actualizar(params) {
     try {
-      delete params.id;
       delete params.stock;
 
-      const [resultado] = await db.query(`UPDATE productos SET ? WHERE nombre = ?`, [
+      const [resultado] = await db.query(`UPDATE productos SET ? WHERE id_producto = ?`, [
         params,
-        params.nombre,
+        params.id_producto,
       ]);
+
 
       return resultado;
     } catch (error) {
